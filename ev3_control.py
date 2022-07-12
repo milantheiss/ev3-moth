@@ -57,6 +57,7 @@ def followTheLight():
     if -5 <= valueDiff <= 5 and distance > 10:
         movetank.on(70, 70)
         logger.debug("Moving to Light")
+        sleep(0.5)
 
     # Motoren werden ausgeschaltet
     movetank.off()
