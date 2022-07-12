@@ -33,18 +33,22 @@ def followTheLight():
     valueRight = lightsensor1.ambient_light_intensity
     valueLeft = lightsensor2.ambient_light_intensity
 
+    #Calc Difference
     valueDiff = valueRight - valueLeft
 
+    #Wenn mehr Licht auf der rechten Seite ist, dreht sich der EV3 nach rechts
     if valueDiff > 6:
         movetank.on(35, -35)
         logger.debug("Turning Right")
         sleep(0.5)
 
+    #Wenn mehr Licht auf der linken Seite ist, dreht sich der EV3 nach links
     if valueDiff < -6:
         movetank.on(-35, 35)
         logger.debug("Turning Left")
         sleep(0.5)
 
+    #Motoren werden ausgeschaltet
     movetank.off()
     
     logger.debug('Links: %d', valueRight)
