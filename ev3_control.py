@@ -59,5 +59,3 @@ def followTheLight():
 if __name__ == '__main__':
     while True:
         followTheLight()
-
-    # Change checking for inputs to false to stop handleing --> bei Command
