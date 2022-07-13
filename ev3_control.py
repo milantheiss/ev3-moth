@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
+from cmath import log
 import logging
+import threading
 from time import sleep
 
 from ev3dev2.motor import MoveTank
 from ev3dev2.motor import OUTPUT_A, OUTPUT_B
 from ev3dev2.sensor.lego import ColorSensor, UltrasonicSensor
 from ev3dev2.sensor import INPUT_1, INPUT_2, INPUT_3
+from ev3dev2.button import Button
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(threadName)s %(name)s %(message)s")
 logger = logging.getLogger('EV3 CONTROLLER')
@@ -27,10 +30,22 @@ lightsensor2.MODE_COL_AMBIENT
 
 ultrasonicSensor.MODE_US_SI_CM
 
+button = Button()
+
 # True --> Licht folgen ; False --> Licht meiden
 seeklight = True
 
-def followTheLight():
+move_forward = False
+
+def _on_enter(state):
+    global move_forward
+    if state:
+        move_forward = not move_forward
+        logger.debug(move_forward)
+
+button.on_enter = _on_enter
+
+def calcDifference():
     # Get Light Intensity
     valueRight = lightsensor1.ambient_light_intensity
     valueLeft = lightsensor2.ambient_light_intensity
@@ -42,37 +57,39 @@ def followTheLight():
     if not seeklight:
         valueDiff = -valueDiff
 
-    # Distanz zu Objekten im Raum
-    distance = ultrasonicSensor.distance_centimeters
-
-    # TODO Add Vorwärtsbewegung bei Drehung
-
-    # Wenn mehr Licht auf der rechten Seite ist, dreht sich der EV3 nach rechts
-    if valueDiff > 6:
-        movetank.on(35, -35)
-        logger.debug("Turning Right")
-        sleep(0.5)
-
-    # Wenn mehr Licht auf der linken Seite ist, dreht sich der EV3 nach links
-    if valueDiff < -6:
-        movetank.on(-35, 35)
-        logger.debug("Turning Left")
-        sleep(0.5)
-
-    # Wenn Licht vor EV3, dann fahre vorwärts
-    if -5 <= valueDiff <= 5 and distance > 10.0:
-        movetank.on(70, 70)
-        logger.debug("Moving to Light")
-        sleep(0.5)
-
-    # Motoren werden ausgeschaltet
-    movetank.off()
-
+    """
     logger.debug('Links: %d', valueRight)
     logger.debug('Rechts: %d', valueLeft)
     logger.debug('Value Diff: %d', valueDiff)
+    """
 
+    return valueDiff
+
+
+def followTheLight():
+    while True:
+        # Wenn mehr Licht auf der rechten Seite ist, dreht sich der EV3 nach rechts
+        while calcDifference() > 6:
+            movetank.on(35, -35)
+            sleep(0.25)
+
+        # Wenn mehr Licht auf der linken Seite ist, dreht sich der EV3 nach links
+        while calcDifference() < -6:
+            movetank.on(-35, 35)
+            sleep(0.25)
+        
+        # Wenn Licht vor EV3, dann fahre vorwärts
+        while -5 <= calcDifference() <= 5 and ultrasonicSensor.distance_centimeters > 20.0 and move_forward:
+            movetank.on(70, 70)
+            sleep(0.25)
+
+        # Motoren werden ausgeschaltet
+        movetank.off()
+
+def _button_update(): 
+    while True:
+        button.process()
 
 if __name__ == '__main__':
-    while True:
-        followTheLight()
+    threading.Thread(target=followTheLight).start()
+    threading.Thread(target=_button_update, daemon=True).start()
