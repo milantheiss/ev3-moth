@@ -45,6 +45,8 @@ def followTheLight():
     # Distanz zu Objekten im Raum
     distance = ultrasonicSensor.distance_centimeters
 
+    # TODO Add Vorwärtsbewegung bei Drehung
+
     # Wenn mehr Licht auf der rechten Seite ist, dreht sich der EV3 nach rechts
     if valueDiff > 6:
         movetank.on(35, -35)
@@ -57,12 +59,8 @@ def followTheLight():
         logger.debug("Turning Left")
         sleep(0.5)
 
-    # Motoren werden ausgeschaltet
-    movetank.off()
-
-
     # Wenn Licht vor EV3, dann fahre vorwärts
-    if -5 <= valueDiff <= 5 and distance > 20:
+    if -5 <= valueDiff <= 5 and distance > 10.0:
         movetank.on(70, 70)
         logger.debug("Moving to Light")
         sleep(0.5)
