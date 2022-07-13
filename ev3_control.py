@@ -27,6 +27,9 @@ lightsensor2.MODE_COL_AMBIENT
 
 ultrasonicSensor.MODE_US_SI_CM
 
+# True --> Licht folgen ; False --> Licht meiden
+seeklight = True
+
 def followTheLight():
     # Get Light Intensity
     valueRight = lightsensor1.ambient_light_intensity
@@ -34,6 +37,10 @@ def followTheLight():
 
     # Calc Difference
     valueDiff = valueRight - valueLeft
+    
+    # Licht folgen / meiden modus umschalten
+    if not seeklight:
+        valueDiff = -valueDiff
 
     # Distanz zu Objekten im Raum
     distance = ultrasonicSensor.distance_centimeters
@@ -52,10 +59,10 @@ def followTheLight():
 
     # Motoren werden ausgeschaltet
     movetank.off()
-    
+
 
     # Wenn Licht vor EV3, dann fahre vorwärts
-    if -5 <= valueDiff <= 5 and distance > 10:
+    if -5 <= valueDiff <= 5 and distance > 20:
         movetank.on(70, 70)
         logger.debug("Moving to Light")
         sleep(0.5)
