@@ -79,12 +79,12 @@ def followTheLight():
             sleep(0.25)
         
         # Wenn Licht vor EV3, dann fahre vorwärts
-        while -5 <= calcDifference() <= 5 and ultrasonicSensor.distance_centimeters > 20.0 and move_forward:
+        if -5 <= calcDifference() <= 5 and ultrasonicSensor.distance_centimeters > 20.0 and move_forward:
             movetank.on(70, 70)
             sleep(0.25)
-
-        # Motoren werden ausgeschaltet
-        movetank.off()
+        else:
+           # Motoren werden ausgeschaltet
+            movetank.off()
 
 def _button_update(): 
     while True:
