@@ -7,7 +7,7 @@ from time import sleep
 from ev3dev2.motor import MoveTank
 from ev3dev2.motor import OUTPUT_A, OUTPUT_B
 from ev3dev2.sensor.lego import ColorSensor, UltrasonicSensor
-from ev3dev2.sensor import INPUT_1, INPUT_2, INPUT_3
+from ev3dev2.sensor import INPUT_1, INPUT_2, INPUT_3, INPUT_4
 from ev3dev2.button import Button
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(threadName)s %(name)s %(message)s")
@@ -18,17 +18,21 @@ logger.setLevel(logging.DEBUG)
 # Rechte Motor --> outA
 movetank = MoveTank(OUTPUT_B, OUTPUT_A)
 
-# Linker Sensor --> in2
-lightsensor2 = ColorSensor(INPUT_2)
 # Rechter Sensor --> in1
 lightsensor1 = ColorSensor(INPUT_1)
-# Ultraschallsensor --> in3
-ultrasonicSensor = UltrasonicSensor(INPUT_3)
+# Linker Sensor --> in2
+lightsensor2 = ColorSensor(INPUT_2)
+
+# Ultraschallsensor nach vorne --> in3
+ultrasonicSensor1= UltrasonicSensor(INPUT_3)
+# Ultraschallsensor nach unten --> in4
+ultrasonicSensor2 = UltrasonicSensor(INPUT_4)
 
 lightsensor1.MODE_COL_AMBIENT
 lightsensor2.MODE_COL_AMBIENT
 
-ultrasonicSensor.MODE_US_SI_CM
+ultrasonicSensor1.MODE_US_SI_CM
+ultrasonicSensor2.MODE_US_SI_CM
 
 button = Button()
 
@@ -79,7 +83,7 @@ def followTheLight():
             sleep(0.25)
       
         # Wenn Licht vor EV3, dann fahre vorwärts
-        if -5 <= calcDifference() <= 5 and ultrasonicSensor.distance_centimeters > 20.0 and move_forward:
+        if -5 <= calcDifference() <= 5 and ultrasonicSensor1.distance_centimeters > 20.0 and move_forward and ultrasonicSensor2.distance_centimeters < 5:
             movetank.on(70, 70)
             sleep(0.25)
         else:
