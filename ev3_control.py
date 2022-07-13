@@ -77,7 +77,7 @@ def followTheLight():
         while calcDifference() < -6:
             movetank.on(-35, 35)
             sleep(0.25)
-        
+      
         # Wenn Licht vor EV3, dann fahre vorwärts
         if -5 <= calcDifference() <= 5 and ultrasonicSensor.distance_centimeters > 20.0 and move_forward:
             movetank.on(70, 70)
