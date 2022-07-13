@@ -52,6 +52,7 @@ def followTheLight():
 
     # Motoren werden ausgeschaltet
     movetank.off()
+    
 
     # Wenn Licht vor EV3, dann fahre vorwärts
     if -5 <= valueDiff <= 5 and distance > 10:
