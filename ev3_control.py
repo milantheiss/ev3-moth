@@ -75,17 +75,16 @@ def followTheLight():
         # Wenn mehr Licht auf der rechten Seite ist, dreht sich der EV3 nach rechts
         while calcDifference() > 6:
             movetank.on(35, -35)
-            sleep(0.25)
+            sleep(0.15)
 
         # Wenn mehr Licht auf der linken Seite ist, dreht sich der EV3 nach links
         while calcDifference() < -6:
             movetank.on(-35, 35)
-            sleep(0.25)
+            sleep(0.15)
       
         # Wenn Licht vor EV3, dann fahre vorwärts
-        if -5 <= calcDifference() <= 5 and ultrasonicSensor1.distance_centimeters > 20.0 and move_forward and ultrasonicSensor2.distance_centimeters < 5:
-            movetank.on(70, 70)
-            sleep(0.25)
+        if -5 <= calcDifference() <= 5 and ultrasonicSensor1.distance_centimeters > 20.0 and move_forward and ultrasonicSensor2.distance_centimeters < 9:
+            movetank.on(55, 55)
         else:
            # Motoren werden ausgeschaltet
             movetank.off()
