@@ -28,9 +28,11 @@ ultrasonicSensor1= UltrasonicSensor(INPUT_3)
 # Ultraschallsensor nach unten --> in4
 ultrasonicSensor2 = UltrasonicSensor(INPUT_4)
 
+# Licht modus von 0 - 100
 lightsensor1.MODE_COL_AMBIENT
 lightsensor2.MODE_COL_AMBIENT
 
+# Abstandmessung in CM
 ultrasonicSensor1.MODE_US_SI_CM
 ultrasonicSensor2.MODE_US_SI_CM
 
@@ -41,6 +43,7 @@ seeklight = True
 
 move_forward = False
 
+# Togglebutton für move_forward
 def _on_enter(state):
     global move_forward
     if state:
