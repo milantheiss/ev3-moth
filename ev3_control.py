@@ -9,6 +9,7 @@ from ev3dev2.motor import OUTPUT_A, OUTPUT_B
 from ev3dev2.sensor.lego import ColorSensor, UltrasonicSensor
 from ev3dev2.sensor import INPUT_1, INPUT_2, INPUT_3, INPUT_4
 from ev3dev2.button import Button
+from ev3dev2.led import Leds
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(threadName)s %(name)s %(message)s")
 logger = logging.getLogger('EV3 CONTROLLER')
@@ -48,10 +49,11 @@ signal_mode = 0
 # Togglebutton für move_forward
 def _on_enter(state):
     global move_forward
+    global signal_mode
+    
     if state:
         move_forward = not move_forward
-        signal_mode = move_forward ? 0 : 1
-        logger.debug(move_forward)
+        signal_mode = 0 if move_forward else 1
 
 button.on_enter = _on_enter
 
@@ -76,7 +78,9 @@ def calcDifference():
     return valueDiff
 
 
-def followTheLight():
+def followTheLight():   
+    global signal_mode
+     
     while True:
         # Wenn mehr Licht auf der rechten Seite ist, dreht sich der EV3 nach rechts
         while calcDifference() > 6:
@@ -89,56 +93,56 @@ def followTheLight():
             sleep(0.15)
       
         # Wenn Licht vor EV3, dann fahre vorwärts
-        if -5 <= calcDifference() <= 5 and ultrasonicSensor1.distance_centimeters > 20.0 and move_forward and ultrasonicSensor2.distance_centimeters < 10:
-            movetank.on(55, 55)
+        if -5 <= calcDifference() <= 5 and ultrasonicSensor1.distance_centimeters > 20.0 and move_forward and ultrasonicSensor2.distance_centimeters < 10.0:     
+            movetank.on(55, 53)
             signal_mode = 1
         else:
-           # Motoren werden ausgeschaltet
+           # Motoren werden ausgeschaltete
             movetank.off()
-            signal_mode = 2
+            signal_mode = 2 if move_forward else 0
 
 def _button_update(): 
     while True:
         button.process()
 
-def _start_lights(){
+def _start_signals():
     global signal_mode
 
-    cycle_state = false
+    cycle_state = False
+    leds = Leds()
 
-    while True:
+    while True:        
         #Default Signal Modus
-        if signal_mode === 0 and cycle_state:
+        if signal_mode == 0 and cycle_state:
             leds.set_color("LEFT", "GREEN")
             leds.set_color("RIGHT", "BLACK")
-            cycle_state = !cycle_state
-        else if signal_mode === 0 and not cycle_state:
+            cycle_state = not cycle_state
+        elif signal_mode == 0 and not cycle_state:
             leds.set_color("LEFT", "BLACK")
             leds.set_color("RIGHT", "GREEN")
-            cycle_state = !cycle_state
-        #Signal Modus für move_forward === true
-        else if signal_mode === 1 and cycle_state:
-            leds.set_color("LEFT", "ORANGE")
-            leds.set_color("RIGHT", "BLACK")
-            cycle_state = !cycle_state
-        else if signal_mode === 1 and not cycle_state:
-            leds.set_color("LEFT", "BLACK")
-            leds.set_color("RIGHT", "ORANGE")
-            cycle_state = !cycle_state
+            cycle_state = not cycle_state
+        #Signal Modus für move_forward == true
+        elif signal_mode == 1 and cycle_state:
+            leds.set_color("LEFT", "YELLOW")
+            leds.set_color("RIGHT", "GREEN")
+            cycle_state = not cycle_state
+        elif signal_mode == 1 and not cycle_state:
+            leds.set_color("LEFT", "GREEN")
+            leds.set_color("RIGHT", "YELLOW")
+            cycle_state = not cycle_state
         #Signal Modus, wenn Ultrasonicsensor Vorwärtsbewegung blockt
-        else if signal_mode === 2 and cycle_state:
+        elif signal_mode == 2 and cycle_state:
             leds.set_color("LEFT", "RED")
-            leds.set_color("RIGHT", "BLACK")
-            cycle_state = !cycle_state
-        else if signal_mode === 2 and not cycle_state:
-            leds.set_color("LEFT", "BLACK")
+            leds.set_color("RIGHT", "GREEN")
+            cycle_state = not cycle_state
+        elif signal_mode == 2 and not cycle_state:
+            leds.set_color("LEFT", "GREEN")
             leds.set_color("RIGHT", "RED")
-            cycle_state = !cycle_state
+            cycle_state = not cycle_state
 
         sleep(0.25)
-}
 
 if __name__ == '__main__':
-    threading.Thread(target=_start_lights, daemon=True).start()
     threading.Thread(target=followTheLight).start()
+    threading.Thread(target=_start_signals, daemon=True).start()
     threading.Thread(target=_button_update, daemon=True).start()
