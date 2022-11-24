@@ -43,11 +43,14 @@ seeklight = True
 
 move_forward = False
 
+signal_mode = 0
+
 # Togglebutton für move_forward
 def _on_enter(state):
     global move_forward
     if state:
         move_forward = not move_forward
+        signal_mode = move_forward ? 0 : 1
         logger.debug(move_forward)
 
 button.on_enter = _on_enter
@@ -86,16 +89,56 @@ def followTheLight():
             sleep(0.15)
       
         # Wenn Licht vor EV3, dann fahre vorwärts
-        if -5 <= calcDifference() <= 5 and ultrasonicSensor1.distance_centimeters > 20.0 and move_forward and ultrasonicSensor2.distance_centimeters < 9:
+        if -5 <= calcDifference() <= 5 and ultrasonicSensor1.distance_centimeters > 20.0 and move_forward and ultrasonicSensor2.distance_centimeters < 10:
             movetank.on(55, 55)
+            signal_mode = 1
         else:
            # Motoren werden ausgeschaltet
             movetank.off()
+            signal_mode = 2
 
 def _button_update(): 
     while True:
         button.process()
 
+def _start_lights(){
+    global signal_mode
+
+    cycle_state = false
+
+    while True:
+        #Default Signal Modus
+        if signal_mode === 0 and cycle_state:
+            leds.set_color("LEFT", "GREEN")
+            leds.set_color("RIGHT", "BLACK")
+            cycle_state = !cycle_state
+        else if signal_mode === 0 and not cycle_state:
+            leds.set_color("LEFT", "BLACK")
+            leds.set_color("RIGHT", "GREEN")
+            cycle_state = !cycle_state
+        #Signal Modus für move_forward === true
+        else if signal_mode === 1 and cycle_state:
+            leds.set_color("LEFT", "ORANGE")
+            leds.set_color("RIGHT", "BLACK")
+            cycle_state = !cycle_state
+        else if signal_mode === 1 and not cycle_state:
+            leds.set_color("LEFT", "BLACK")
+            leds.set_color("RIGHT", "ORANGE")
+            cycle_state = !cycle_state
+        #Signal Modus, wenn Ultrasonicsensor Vorwärtsbewegung blockt
+        else if signal_mode === 2 and cycle_state:
+            leds.set_color("LEFT", "RED")
+            leds.set_color("RIGHT", "BLACK")
+            cycle_state = !cycle_state
+        else if signal_mode === 2 and not cycle_state:
+            leds.set_color("LEFT", "BLACK")
+            leds.set_color("RIGHT", "RED")
+            cycle_state = !cycle_state
+
+        sleep(0.25)
+}
+
 if __name__ == '__main__':
+    threading.Thread(target=_start_lights, daemon=True).start()
     threading.Thread(target=followTheLight).start()
     threading.Thread(target=_button_update, daemon=True).start()
